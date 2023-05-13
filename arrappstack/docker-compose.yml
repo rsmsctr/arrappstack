@@ -1,0 +1,75 @@
+---
+
+version: "3"
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr 
+    network_mode: service:gluetun
+    environment: 
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+    - /datastore/data:/data
+    - /docker/appdata/sonarr:/config
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: service:gluetun
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=America/Chicago
+    volumes:
+    - /docker/appdata/radarr:/config
+    - /datastore/data:/data
+    restart: unless-stopped
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    network_mode: service:gluetun
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - AUTO_UPDATE=true
+    volumes:
+      - /docker/appdata/jackett:/config
+      - /datastore/data/torrents:/downloads
+    restart: unless-stopped
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: service:gluetun
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - WEBUI_PORT=8080
+    volumes:
+      - /docker/appdata/qbittorrent:/config
+      - /datastore/data/torrents:/downloads
+    restart: unless-stopped
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8989:8989
+      - 7878:7878
+      - 9117:9117
+      - 8080:8080
+      - 8888:8888/tcp # HTTP proxy
+      - 8388:8388/tcp # Shadowsocks
+      - 8388:8388/udp # Shadowsocks
+    environment:
+      - VPN_SERVICE_PROVIDER=
+      - OPENVPN_USER=
+      - OPENVPN_PASSWORD=
+      - TZ=
+      - SERVER_REGIONS=
